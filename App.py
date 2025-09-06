@@ -105,7 +105,7 @@ if st.button("Extract Data"):
                     if not aircrafts_df.empty:
                         aircrafts_df = aircrafts_df.rename(columns={"hc": "H/C"})
                         aircrafts_df = process_contcomm_column(aircrafts_df)
-                        st.subheader("🛩️ Aircrafts Data")
+                        st.subheader("Aircrafts Data")
                         st.dataframe(aircrafts_df)
                         dfs["Aircrafts"] = aircrafts_df
 
@@ -114,7 +114,7 @@ if st.button("Extract Data"):
                     if not engines_df.empty:
                         engines_df.drop(columns=["yom", "hc", "engines", "cc"], inplace=True, errors="ignore")
                         engines_df = process_contcomm_column(engines_df)
-                        st.subheader("🔧 Engines Data")
+                        st.subheader("Engines Data")
                         st.dataframe(engines_df)
                         dfs["Engines"] = engines_df
 
@@ -124,7 +124,7 @@ if st.button("Extract Data"):
                 if not listings_df.empty:
                     listings_df.drop(columns=["yom", "hc", "engines", "cc"], inplace=True, errors="ignore")
                     listings_df = process_contcomm_column(listings_df)
-                    st.subheader("📋 Listings Data")
+                    st.subheader("Listings Data")
                     st.dataframe(listings_df)
                     dfs["Listings"] = listings_df
 
@@ -139,3 +139,4 @@ if st.button("Extract Data"):
                 )
         else:
             st.error("⚠️ No data found in the provided URL.")
+

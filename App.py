@@ -159,7 +159,7 @@ if st.session_state.data:
             listings_df = process_contcomm_column(listings_df)
             st.subheader("📋 Models Data")
             st.dataframe(listings_df)
-            dfs["Listings"] = listings_df
+            dfs["Models"] = listings_df
 
     # Products
     if "products" in data:
@@ -167,7 +167,7 @@ if st.session_state.data:
         if not products_df.empty:
             st.subheader("🏭 Companies Data")
             st.dataframe(products_df)
-            dfs["Products"] = products_df
+            dfs["Companies"] = products_df
 
     # Download Excel
     if dfs:
@@ -178,4 +178,5 @@ if st.session_state.data:
             file_name="aviation_data.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
 

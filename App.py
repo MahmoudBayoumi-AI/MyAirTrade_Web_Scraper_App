@@ -43,16 +43,16 @@ def get_data_from_url(url):
                 if "var listings" in script_content:
                     listings_match = re.search(r"var listings = (\[.*?\]);", script_content, re.DOTALL)
                     if listings_match:
-                        extracted_data["listings"] = json.loads(listings_match.group(1))
+                        extracted_data["models"] = json.loads(listings_match.group(1))
 
                 # 3) Products pages (inside script)
                 if "var products" in script_content:
                     products_match = re.search(r"var products = (\[.*?\]);", script_content, re.DOTALL)
                     if products_match:
-                        extracted_data["products"] = json.loads(products_match.group(1))
+                        extracted_data["companies"] = json.loads(products_match.group(1))
 
             # 4) Products from HTML table if no script found
-            if "products" not in extracted_data:
+            if "companies" not in extracted_data:
                 table = soup.find("table", {"id": "myTable"})
                 if table:
                     headers = [th.get_text(strip=True) for th in table.find("thead").find_all("th")]
@@ -61,7 +61,7 @@ def get_data_from_url(url):
                         cells = [td.get_text(" ", strip=True) for td in tr.find_all("td")]
                         rows.append(cells)
                     if rows:
-                        extracted_data["products"] = [dict(zip(headers, row)) for row in rows]
+                        extracted_data["companies"] = [dict(zip(headers, row)) for row in rows]
 
             return extracted_data if extracted_data else None
         else:
@@ -153,8 +153,8 @@ if st.session_state.data:
             dfs["Engines"] = engines_df
 
     # Listings
-    if "listings" in data:
-        Models_df = pd.DataFrame(data.get("listings", []))
+    if "models" in data:
+        Models_df = pd.DataFrame(data.get("models", []))
         if not Models_df.empty:
             Models_df.drop(columns=["yom", "hc", "engines", "cc"], inplace=True, errors="ignore")
             Models_df = process_contcomm_column(Models_df)
@@ -163,8 +163,8 @@ if st.session_state.data:
             dfs["Models"] = Models_df
 
     # Products
-    if "products" in data:
-        Companies_df = pd.DataFrame(data.get("products", []))
+    if "companies" in data:
+        Companies_df = pd.DataFrame(data.get("companies", []))
         if not Companies_df.empty:
             st.subheader("🏭 Companies Data")
             st.dataframe(Companies_df)
@@ -179,6 +179,7 @@ if st.session_state.data:
             file_name="aviation_data.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
 
 
 

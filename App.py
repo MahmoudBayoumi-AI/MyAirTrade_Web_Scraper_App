@@ -12,8 +12,8 @@ def get_data_from_url(url):
     """
     Fetch HTML from the URL and extract:
     - Company pages (aircrafts + engines)
-    - Listings pages
-    - Products pages (from script or HTML table)
+    - Models pages
+    - Companies pages (from script or HTML table)
     """
     try:
         response = requests.get(url)
@@ -84,6 +84,7 @@ def process_contcomm_column(df):
     name_pattern = r'title=".*?">(.*?)<'
 
     df.columns = df.columns.str.upper()
+    
     df["Name"] = df["CONTCOMM"].apply(lambda x: re.search(name_pattern, str(x)).group(1) if re.search(name_pattern, str(x)) else None)
     df["Email"] = df["CONTCOMM"].apply(lambda x: re.search(email_pattern, str(x)).group(1) if re.search(email_pattern, str(x)) else None)
     df["Phone"] = df["CONTCOMM"].apply(lambda x: re.search(phone_pattern, str(x)).group(0) if re.search(phone_pattern, str(x)) else None)
@@ -153,21 +154,21 @@ if st.session_state.data:
 
     # Listings
     if "listings" in data:
-        listings_df = pd.DataFrame(data.get("listings", []))
-        if not listings_df.empty:
-            listings_df.drop(columns=["yom", "hc", "engines", "cc"], inplace=True, errors="ignore")
-            listings_df = process_contcomm_column(listings_df)
+        Models_df = pd.DataFrame(data.get("listings", []))
+        if not Models_df.empty:
+            Models_df.drop(columns=["yom", "hc", "engines", "cc"], inplace=True, errors="ignore")
+            Models_df = process_contcomm_column(Models_df)
             st.subheader("📋 Models Data")
-            st.dataframe(listings_df)
-            dfs["Models"] = listings_df
+            st.dataframe(Models_df)
+            dfs["Models"] = Models_df
 
     # Products
     if "products" in data:
-        products_df = pd.DataFrame(data.get("products", []))
-        if not products_df.empty:
+        Companies_df = pd.DataFrame(data.get("products", []))
+        if not Companies_df.empty:
             st.subheader("🏭 Companies Data")
-            st.dataframe(products_df)
-            dfs["Companies"] = products_df
+            st.dataframe(Companies_df)
+            dfs["Companies"] = Companies_df
 
     # Download Excel
     if dfs:
@@ -178,5 +179,6 @@ if st.session_state.data:
             file_name="aviation_data.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
 
 

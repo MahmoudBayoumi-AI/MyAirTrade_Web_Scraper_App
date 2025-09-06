@@ -9,13 +9,17 @@ from io import BytesIO
 # ================== FUNCTIONS ==================
 
 def get_data_from_url(url):
-    """Fetch HTML from the URL and extract aircrafts, engines, or listings data"""
+    """
+    Fetch HTML from the URL and extract:
+    - Company pages (aircrafts + engines)
+    - Listings pages
+    - Products pages (from script or HTML table)
+    """
     try:
         response = requests.get(url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.content, "html.parser")
             scripts = soup.find_all("script")
-
             extracted_data = {}
 
             for script_tag in scripts:
@@ -41,8 +45,25 @@ def get_data_from_url(url):
                     if listings_match:
                         extracted_data["listings"] = json.loads(listings_match.group(1))
 
-            return extracted_data if extracted_data else None
+                # 3) Products pages (inside script)
+                if "var products" in script_content:
+                    products_match = re.search(r"var products = (\[.*?\]);", script_content, re.DOTALL)
+                    if products_match:
+                        extracted_data["products"] = json.loads(products_match.group(1))
 
+            # 4) Products from HTML table if no script found
+            if "products" not in extracted_data:
+                table = soup.find("table", {"id": "myTable"})
+                if table:
+                    headers = [th.get_text(strip=True) for th in table.find("thead").find_all("th")]
+                    rows = []
+                    for tr in table.find("tbody").find_all("tr"):
+                        cells = [td.get_text(" ", strip=True) for td in tr.find_all("td")]
+                        rows.append(cells)
+                    if rows:
+                        extracted_data["products"] = [dict(zip(headers, row)) for row in rows]
+
+            return extracted_data if extracted_data else None
         else:
             st.error(f"Failed to fetch page. Status code: {response.status_code}")
             return None
@@ -86,9 +107,8 @@ def to_excel(dfs: dict):
 st.set_page_config(page_title="MyAirTrade Data Extractor", page_icon="✈️", layout="wide")
 
 st.title("✈️ MyAirTrade Data Extractor")
-st.markdown("Enter a **MyAirTrade URL** to extract aircrafts, engines, or listings data.")
+st.markdown("Enter a **MyAirTrade URL** to extract aircrafts, engines, listings, or products data.")
 
-# تخزين البيانات في session_state
 if "data" not in st.session_state:
     st.session_state.data = None
 
@@ -99,19 +119,19 @@ def extract_data():
         return
     st.session_state.data = get_data_from_url(url_value)
 
-# إدخال URL مع دعم زر Enter
+# Input with Enter support
 url = st.text_input("Enter the URL:", key="url", on_change=extract_data)
 
-# زر اختياري للضغط عليه
+# Optional button
 if st.button("Extract Data"):
     extract_data()
 
-# عرض النتائج
+# Display results
 if st.session_state.data:
     data = st.session_state.data
     dfs = {}
 
-    # Company Pages
+    # Aircrafts
     if "aircrafts" in data:
         aircrafts_df = pd.DataFrame(data.get("aircrafts", []))
         if not aircrafts_df.empty:
@@ -121,6 +141,7 @@ if st.session_state.data:
             st.dataframe(aircrafts_df)
             dfs["Aircrafts"] = aircrafts_df
 
+    # Engines
     if "engines" in data:
         engines_df = pd.DataFrame(data.get("engines", []))
         if not engines_df.empty:
@@ -130,15 +151,23 @@ if st.session_state.data:
             st.dataframe(engines_df)
             dfs["Engines"] = engines_df
 
-    # Listings Pages
+    # Listings
     if "listings" in data:
         listings_df = pd.DataFrame(data.get("listings", []))
         if not listings_df.empty:
             listings_df.drop(columns=["yom", "hc", "engines", "cc"], inplace=True, errors="ignore")
             listings_df = process_contcomm_column(listings_df)
-            st.subheader("📋 Listings Data")
+            st.subheader("📋 Models Data")
             st.dataframe(listings_df)
             dfs["Listings"] = listings_df
+
+    # Products
+    if "products" in data:
+        products_df = pd.DataFrame(data.get("products", []))
+        if not products_df.empty:
+            st.subheader("🏭 Companies Data")
+            st.dataframe(products_df)
+            dfs["Products"] = products_df
 
     # Download Excel
     if dfs:

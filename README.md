@@ -22,6 +22,10 @@ A simple **Streamlit web app** that extracts **Aircrafts, Engines, and Companies
 
 ---
 
+## 🔗 Live Demo
+Try the app directly here: [MyAirTrade Data Extractor](https://myairtradedata.streamlit.app/)
+
+---
 ## 🛠️ Technologies Used
 - [Python 3](https://www.python.org/)
 - [Streamlit](https://streamlit.io/)

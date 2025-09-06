@@ -107,7 +107,7 @@ def to_excel(dfs: dict):
 st.set_page_config(page_title="MyAirTrade Data Extractor", page_icon="✈️", layout="wide")
 
 st.title("✈️ MyAirTrade Data Extractor")
-st.markdown("Enter a **MyAirTrade URL** to extract aircrafts, engines, listings, or products data.")
+st.markdown("Enter a **MyAirTrade URL** to extract aircrafts, engines or Companies data.")
 
 if "data" not in st.session_state:
     st.session_state.data = None
@@ -178,3 +178,4 @@ if st.session_state.data:
             file_name="aviation_data.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
+
